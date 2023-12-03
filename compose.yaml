@@ -1,0 +1,30 @@
+version: '3.7'
+
+volumes:
+  postgres:
+  pgadmin:
+
+services:
+  postgres:
+    container_name: postgres-1
+    image: 'postgres:alpine'
+    environment:
+      - 'POSTGRES_DB=events'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5432'
+    volumes:
+      - postgres:/data/postgres
+  pgadmin:
+    container_name: pgadmin-1
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@vishsali.dev
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_LISTEN_PORT: 5050
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - '5050:5050'
+
