@@ -1,24 +1,43 @@
-version: '3.7'
-
-volumes:
-  postgres:
-  pgadmin:
+version: '3.9'
 
 services:
+  event:
+    container_name: event-webservice
+    image: event-webservice:latest
+    network_mode: bridge
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - postgres
+
+
   postgres:
     container_name: postgres-1
-    image: 'postgres:alpine'
+    image: postgres:alpine
+    network_mode: bridge
     environment:
-      - 'POSTGRES_DB=events'
-      - 'POSTGRES_PASSWORD=password'
-      - 'POSTGRES_USER=postgres'
+      - "POSTGRES_DB=events"
+      - "POSTGRES_PASSWORD=password"
+      - "POSTGRES_USER=postgres"
     ports:
-      - '5432'
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
-      - postgres:/data/postgres
+      - postgres-data:/var/lib/postgresql/data
+
   pgadmin:
     container_name: pgadmin-1
-    image: dpage/pgadmin4:latest
+    network_mode: bridge
+    image: elestio/pgadmin:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@vishsali.dev
       PGADMIN_DEFAULT_PASSWORD: password
@@ -26,5 +45,9 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
-      - '5050:5050'
+      - "5050:5050"
+    depends_on:
+      - postgres
 
+volumes:
+  postgres-data:
